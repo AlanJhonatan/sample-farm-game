@@ -1,41 +1,38 @@
 import type { MovementIntent } from "../../systems/InputController";
-
-enum Direction {
-  Right,
-  Left,
-  Up,
-  Down,
-}
+import { Direction, Player } from "./Player";
 
 export class PlayerAnimator {
-  private sprite: Phaser.GameObjects.Sprite;
-  private lastDirection: Direction;
+  private player: Player;
 
-  constructor(sprite: Phaser.GameObjects.Sprite) {
-    this.sprite = sprite;
+  constructor(player: Player) {
+    this.player = player;
   }
 
   update(moveIntent: MovementIntent) {
     if (moveIntent.x !== 0) {
-      this.sprite.setFlipX(moveIntent.x < 0);
-      this.sprite.anims.play("player-walking-right", true);
-      this.lastDirection = moveIntent.x < 0 ? Direction.Left : Direction.Right;
+      this.player.setFlipX(moveIntent.x < 0);
+      this.player.anims.play("player-walking-right", true);
+
+      const facing = moveIntent.x < 0 ? Direction.Left : Direction.Right;
+      this.player.setFacing(facing);
     } else if (moveIntent.y !== 0) {
-      this.sprite.anims.play(
+      this.player.anims.play(
         moveIntent.y < 0 ? "player-walking-up" : "player-walking-down",
         true,
       );
-      this.lastDirection = moveIntent.y < 0 ? Direction.Up : Direction.Down;
+      const facing = moveIntent.y < 0 ? Direction.Up : Direction.Down;
+      this.player.setFacing(facing);
     } else {
-      if (
-        this.lastDirection === Direction.Left ||
-        this.lastDirection === Direction.Right
-      ) {
-        this.sprite.play("player-idle-right", true);
-      } else if (this.lastDirection === Direction.Up) {
-        this.sprite.play("player-idle-up", true);
+      const playerFacing = this.player.getFacing();
+      const playerIsFacingSides =
+        playerFacing === Direction.Left || playerFacing === Direction.Right;
+
+      if (playerIsFacingSides) {
+        this.player.play("player-idle-right", true);
+      } else if (playerFacing === Direction.Up) {
+        this.player.play("player-idle-up", true);
       } else {
-        this.sprite.play("player-idle-down", true);
+        this.player.play("player-idle-down", true);
       }
     }
   }
