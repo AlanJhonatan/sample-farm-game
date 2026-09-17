@@ -3,6 +3,7 @@ import type { Player } from "../entities/player/Player";
 
 export class TilemapManager {
   private scene: Phaser.Scene;
+  private tilemap: Phaser.Tilemaps.Tilemap;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -16,46 +17,46 @@ export class TilemapManager {
 
     this.scene.load.image(
       "tilemap-farm",
-      "assets/tilemaps/tilemap-tiny-farm.png",
+      "assets/tilemaps/tilemap-tiny-farm_old.png",
     );
 
     this.scene.load.image(
       "tilemap-town",
-      "assets/tilemaps/tilemap-tiny-town.png",
+      "assets/tilemaps/tilemap-tiny-town_old.png",
     );
   }
 
-  create(tilemap: Phaser.Tilemaps.Tilemap, player: Player) {
-    const tilemapFarm = tilemap.addTilesetImage("tilemap", "tilemap-farm");
-    const tilemapTown = tilemap.addTilesetImage("tilemap-town", "tilemap-town");
+  create(player: Player) {
+    this.tilemap = this.scene.make.tilemap({ key: "base-map" });
+    const tilemapFarm = this.tilemap.addTilesetImage("tilemap", "tilemap-farm");
+    const tilemapTown = this.tilemap.addTilesetImage(
+      "tilemap-town",
+      "tilemap-town",
+    );
 
-    tilemap.createLayer("ground", [tilemapFarm, tilemapTown], 0, 0);
+    this.tilemap.createLayer("ground", [tilemapFarm, tilemapTown], 0, 0);
 
-    const wallLayer = tilemap.createLayer(
+    const wallLayer = this.tilemap.createLayer(
       "walls/trees",
       [tilemapFarm, tilemapTown],
       0,
       0,
     );
 
-    tilemap.createLayer("decoration/items", [tilemapFarm, tilemapTown], 0, 0);
+    this.tilemap.createLayer(
+      "decoration/items",
+      [tilemapFarm, tilemapTown],
+      0,
+      0,
+    );
 
     wallLayer.setCollisionByProperty({ collides: true });
 
     this.scene.physics.add.collider(player, wallLayer);
     this.scene.physics.add.collider(player, wallLayer);
+  }
 
-    const objectsLayer = tilemap.getObjectLayer("items");
-    console.log("objectsLayer", objectsLayer);
-
-    const debugCollision = this.scene.add.graphics().setAlpha(0.5);
-
-    wallLayer.renderDebug(debugCollision, {
-      tileColor: null,
-      collidingTileColor: new Phaser.Display.Color(255, 0, 0, 150),
-      faceColor: new Phaser.Display.Color(0, 255, 0, 200),
-    });
-
-    console.log("tree", tilemap.getLayer("walls/trees"));
+  getTilemap(): Phaser.Tilemaps.Tilemap {
+    return this.tilemap;
   }
 }
