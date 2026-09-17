@@ -1,7 +1,9 @@
 import * as Phaser from "phaser";
 
 import { PlayerAnimations } from "../animations";
+import { INITIAL_TREES } from "../configs/trees";
 import { Player } from "../entities/player/Player";
+import { TreeManager } from "../entities/TreeManager";
 import { InputController } from "../systems/InputController";
 import { MainCamera } from "../systems/MainCamera";
 import { TilemapManager } from "../systems/TilemapManager";
@@ -15,6 +17,8 @@ export class MainScene extends Phaser.Scene {
   private tilemapManager: TilemapManager;
   private mainCamera: MainCamera;
 
+  private treeManager: TreeManager;
+
   constructor() {
     super("MainScene");
 
@@ -22,20 +26,22 @@ export class MainScene extends Phaser.Scene {
     this.playerAnimations = new PlayerAnimations(this);
     this.inputController = new InputController(this);
     this.mainCamera = new MainCamera(this);
+    this.treeManager = new TreeManager(this);
   }
 
   preload() {
     this.playerAnimations.preload();
     this.tilemapManager.preload();
+    this.treeManager.preload();
   }
 
   create() {
-    const tilemap = this.make.tilemap({ key: "base-map" });
-
     this.playerAnimations.create();
     this.player = new Player(this, 50, 50);
 
-    this.tilemapManager.create(tilemap, this.player);
+    this.tilemapManager.create(this.player);
+    const tilemap = this.tilemapManager.getTilemap();
+
     this.inputController.create();
 
     this.physics.world.setBounds(
@@ -46,9 +52,14 @@ export class MainScene extends Phaser.Scene {
     );
 
     this.mainCamera.create(tilemap, this.player);
+
+    this.treeManager.create(INITIAL_TREES, this.player);
   }
 
-  update(): void {
-    this.player.update(this.inputController.getMovementIntent());
+  update(time: number): void {
+    const tilemap = this.tilemapManager.getTilemap();
+
+    this.player.update(this.inputController.getMovementIntent(), time);
+    this.player.getFacingTile(tilemap);
   }
 }
