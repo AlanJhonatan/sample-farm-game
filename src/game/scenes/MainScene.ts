@@ -4,9 +4,12 @@ import { PlayerAnimations } from "../animations";
 import { INITIAL_TREES } from "../configs/trees";
 import { Player } from "../entities/player/Player";
 import { TreeManager } from "../entities/TreeManager";
+import { MapTileDebug } from "../helpers/MapTileDebug";
 import { InputController } from "../systems/InputController";
+import { InteractionManager } from "../systems/InteractionManager";
 import { MainCamera } from "../systems/MainCamera";
 import { TilemapManager } from "../systems/TilemapManager";
+import { InteractionPrompt } from "../ui/InteractionPrompt";
 
 export class MainScene extends Phaser.Scene {
   private player: Player;
@@ -18,6 +21,11 @@ export class MainScene extends Phaser.Scene {
   private mainCamera: MainCamera;
 
   private treeManager: TreeManager;
+  private interactionManager: InteractionManager;
+
+  private mapTileDebug: MapTileDebug;
+
+  private interactionPrompt: InteractionPrompt;
 
   constructor() {
     super("MainScene");
@@ -27,6 +35,10 @@ export class MainScene extends Phaser.Scene {
     this.inputController = new InputController(this);
     this.mainCamera = new MainCamera(this);
     this.treeManager = new TreeManager(this);
+    this.interactionManager = new InteractionManager(this);
+    this.interactionPrompt = new InteractionPrompt(this);
+
+    this.mapTileDebug = new MapTileDebug();
   }
 
   preload() {
@@ -37,7 +49,7 @@ export class MainScene extends Phaser.Scene {
 
   create() {
     this.playerAnimations.create();
-    this.player = new Player(this, 50, 50);
+    this.player = new Player(this, 1, 5);
 
     this.tilemapManager.create(this.player);
     const tilemap = this.tilemapManager.getTilemap();
@@ -52,14 +64,26 @@ export class MainScene extends Phaser.Scene {
     );
 
     this.mainCamera.create(tilemap, this.player);
-
     this.treeManager.create(INITIAL_TREES, this.player);
+
+    const graphics = this.add.graphics();
+    this.interactionManager.register(...this.treeManager.getInteractables());
+
+    this.mapTileDebug.drawTiles(graphics, 20, 20);
+    this.interactionPrompt.create();
+
+    this.interactionManager.create(
+      this.interactionPrompt,
+      this.inputController,
+    );
   }
 
   update(time: number): void {
-    const tilemap = this.tilemapManager.getTilemap();
+    const tilemap: Phaser.Tilemaps.Tilemap = this.tilemapManager.getTilemap();
 
     this.player.update(this.inputController.getMovementIntent(), time);
-    this.player.getFacingTile(tilemap);
+    const facingTile = this.player.getFacingTile(tilemap);
+
+    this.interactionManager.checkInteraction(facingTile);
   }
 }

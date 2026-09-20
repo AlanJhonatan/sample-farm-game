@@ -16,6 +16,7 @@ export class InputController {
   private scene: Phaser.Scene;
   private wasd: WasdKeys;
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+  private interactionKey: Phaser.Input.Keyboard.Key;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -26,6 +27,10 @@ export class InputController {
     this.wasd = this.scene.input.keyboard.addKeys(
       "w,a,s,d",
     ) as unknown as WasdKeys;
+
+    this.interactionKey = this.scene.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.E,
+    );
   }
 
   private isDown(...keys: (Phaser.Input.Keyboard.Key | undefined)[]): boolean {
@@ -42,5 +47,9 @@ export class InputController {
       x: left ? -1 : right ? 1 : 0,
       y: up ? -1 : down ? 1 : 0,
     };
+  }
+
+  getInteractionIntent(): boolean {
+    return Phaser.Input.Keyboard.JustDown(this.interactionKey);
   }
 }

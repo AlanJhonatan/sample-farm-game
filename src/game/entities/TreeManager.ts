@@ -6,9 +6,17 @@ import {
   type TreeSpriteLoader,
 } from "../configs/trees";
 import type { Player } from "./player/Player";
+import { TreeInteractable } from "./TreeInteractable";
+
+export type TreeInstance = TreeData & {
+  id: string;
+  pieces: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[];
+  anchorPiece: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+};
 
 export class TreeManager {
-  private trees: [];
+  private trees: TreeInstance[] = [];
+  private lastId: number = 0;
 
   constructor(private scene: Phaser.Scene) {}
 
@@ -28,50 +36,68 @@ export class TreeManager {
 
   spawnTree(treeData: TreeData, player: Player) {
     const preset = TREE_VARIANTS[treeData.variant];
-    const pieces = preset.pieces;
     const { x, y } = treeData.position;
 
-    return pieces.map((piece) => {
+    let anchorPiece: Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
+
+    const pieces = preset.pieces.map((piece) => {
       const sprite = this.scene.physics.add
         .image(x * 16, y * 16 + piece.offsetY, piece.textureKey)
-        .setDepth(piece.depth);
+        .setDepth(piece.depth)
+        .setOrigin(0, 0);
+
+      sprite.setData("tree.data", treeData.properties);
 
       if (["down", "small"].some((key) => piece.textureKey.includes(key))) {
         sprite.setImmovable();
         this.scene.physics.add.collider(player, sprite);
+        anchorPiece = sprite;
       }
-
-      sprite.setData("tree.data", treeData.properties);
 
       return sprite;
     });
+
+    return {
+      pieces,
+      anchorPiece,
+    };
+  }
+
+  getTrees(): TreeInstance[] {
+    return this.trees;
+  }
+
+  removeTree(id: string): void {
+    const tree = this.trees.find((tree) => tree.id === id);
+
+    tree.pieces.forEach((sprite) => sprite.destroy());
+
+    this.trees = this.trees.filter((tree) => tree.id !== id);
+  }
+
+  generateTreeId(): string {
+    const prefix = "tree";
+
+    if (this.lastId === 0) {
+      this.lastId = 1;
+      return `${prefix}-001`;
+    }
+
+    const nextId = this.lastId + 1;
+    this.lastId = nextId;
+
+    return `${prefix}-${String(nextId).padStart(3, "0")}`;
+  }
+
+  getInteractables(): TreeInteractable[] {
+    return this.trees.map((tree) => new TreeInteractable(this.scene, tree));
   }
 
   create(treesMap: TreeData[], player: Player) {
-    const trees = treesMap.map((tree) => ({
-      pieces: this.spawnTree(tree, player),
+    this.trees = treesMap.map((tree) => ({
       ...tree,
+      ...this.spawnTree(tree, player),
+      id: this.generateTreeId(),
     }));
-
-    console.log(trees);
-
-    // const pieces = trees.map((tree) => tree.pieces);
-    // console.log(pieces);
-
-    // console.log();
-    // console.log(spawnedTrees);
-
-    // spawnedTrees.map((tree) => )
-    // spawnedTrees
-    //   .filter(
-    //     (tree) =>
-    //       tree[0].texture.key.includes("down") ||
-    //       tree[0].texture.key.includes("small"),
-    //   )
-    //   .forEach((tree) => this.scene.physics.add.collider(this.player, tree));
-  }
-
-  getTrees(): Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] {
-    return this.trees;
   }
 }
