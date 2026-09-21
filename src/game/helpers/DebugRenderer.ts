@@ -8,9 +8,14 @@ export class DebugRenderer {
     this.graphics.setDepth(9999);
   }
 
-  drawFacingTile(worldX: number, worldY: number, size: number) {
+  drawFacingTile(
+    worldX: number,
+    worldY: number,
+    size: number,
+    color: number = 0xff0000,
+  ) {
     this.graphics.clear(); // limpa o frame anterior, senão acumula quadrados
-    this.graphics.lineStyle(2, 0xff0000, 1); // borda vermelha, espessura 2
+    this.graphics.lineStyle(2, color, 1); // borda vermelha, espessura 2
     this.graphics.strokeRect(worldX, worldY, size, size);
   }
 }
