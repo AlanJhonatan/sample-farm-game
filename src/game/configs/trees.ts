@@ -6,7 +6,7 @@ type TreeVariantKey =
   | "tree.forest.neutral.large"
   | "tree.forest.deadbush.large";
 
-interface TreePiecesConfig {
+export interface TreePiecesConfig {
   textureKey: string;
   offsetY: number;
   depth: number;
@@ -158,8 +158,8 @@ export const TREE_VARIANTS: Record<TreeVariantKey, TreeVariantConfig> = {
 export const INITIAL_TREES: TreeData[] = [
   {
     position: {
-      x: 3,
-      y: 4,
+      x: 1,
+      y: 2,
     },
     variant: "tree.forest.neutral.large",
     properties: {
@@ -168,8 +168,8 @@ export const INITIAL_TREES: TreeData[] = [
   },
   {
     position: {
-      x: 6,
-      y: 4,
+      x: 2,
+      y: 2,
     },
     variant: "tree.forest.deadbush.large",
     properties: {
@@ -178,19 +178,18 @@ export const INITIAL_TREES: TreeData[] = [
   },
   {
     position: {
-      x: 9,
-      y: 4,
+      x: 3,
+      y: 2,
     },
     variant: "tree.forest.oak.large",
     properties: {
       ...TREE_VARIANTS["tree.forest.oak.large"].defaultProperties,
     },
   },
-
   {
     position: {
-      x: 3,
-      y: 6,
+      x: 4,
+      y: 2,
     },
     variant: "tree.forest.oak.small",
     properties: {
