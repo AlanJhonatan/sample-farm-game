@@ -1,7 +1,7 @@
 import * as Phaser from "phaser";
 
-import { TerrainGenerationScene } from "./_terrain/scenes/TerrainGenerationScene";
 import { MainScene } from "./scenes/MainScene";
+import { TerrainGenerationScene } from "./scenes/TerrainGenerationScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
