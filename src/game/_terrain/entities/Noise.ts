@@ -3,14 +3,17 @@ interface NoisePosition {
   y: number;
 }
 
-export class MapNoise {
+export class Noise {
   private position: NoisePosition;
   private noise: number;
 
   constructor(position: NoisePosition, noise: number) {
     this.position = position;
-
     this.noise = noise;
+  }
+
+  toMapId() {
+    return `[${this.position.x},${this.position.y}]`;
   }
 
   getPosition(): NoisePosition {
