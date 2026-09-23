@@ -4,47 +4,21 @@ import { TerrainNoisemapGenerator } from "../_terrain/generators/TerrainNoisemap
 import { TerrainTilesetLoader } from "../_terrain/loaders/TerrainTilesetLoader";
 import { TerrainTilemapManager } from "../_terrain/managers/TerrainTilemapManager";
 import { TerrainTilesetManager } from "../_terrain/managers/TerrainTilesetManager";
+import { TILEMAP } from "../_terrain/manifests/Tilemap";
 import { InputController } from "../systems/InputController";
-
-const MAP_TILES_SIZE = {
-  x: 50,
-  y: 50,
-};
-
-export const NOISE_SCALE: number = 20;
-
-export const TILE_SIZE = 64;
-
-export const GRAY_SCALE: Record<number, number> = {
-  0.1: 0x000000,
-  0.2: 0x1c1c1c,
-  0.3: 0x545454,
-  0.4: 0x717171,
-  0.5: 0x8d8d8d,
-  0.6: 0xaaaaaa,
-  0.7: 0xc6c6c6,
-  0.9: 0xe2e2e2,
-  1: 0xffffff,
-};
-
-export const MAP_COLOR = {
-  water: 0x4e95cc,
-  sand: 0xa19258,
-  grass: 0x5db360,
-  grass_dark: 0x326333,
-  tree: 0x524001,
-  rock: 0x454545,
-};
 
 const CAM_MUTIPLIER = 2;
 const CAM_SPEED = 50;
 
 export class TerrainGenerationScene extends Phaser.Scene {
+  private tilemap: Phaser.Tilemaps.Tilemap;
+
   private terrainNoisemap: TerrainNoisemapGenerator;
 
   //CONTROLLERS
   private inputController: InputController;
   private mapInputController: MapInputController;
+  private mouseInputController: MouseInputController;
 
   // LOADERS
   private tilesetLoader: TerrainTilesetLoader;
@@ -61,7 +35,7 @@ export class TerrainGenerationScene extends Phaser.Scene {
 
     this.terrainNoisemap = new TerrainNoisemapGenerator();
 
-    this.tilemapManager = new TerrainTilemapManager({
+    this.terrainTilemapManager = new TerrainTilemapManager({
       scene: this,
     });
 
@@ -80,12 +54,21 @@ export class TerrainGenerationScene extends Phaser.Scene {
   }
 
   create() {
-    this.inputController.create();
-    this.mapInputController.create();
-    this.tilemapManager.create();
+    this.tilemap = this.make.tilemap({
+      tileWidth: TILEMAP.config.width,
+      tileHeight: TILEMAP.config.height,
+      width: TILEMAP.config.columns,
+      height: TILEMAP.config.rows,
+    });
 
-    this.cameras.main.setOrigin(0, 0);
-    this.cameras.main.setPosition(0, 0);
+    this.terrainTilemapManager.register(
+      this.tilemap,
+      this.tilesetManager,
+      this.tilesetLoader,
+      this.terrainNoisemap,
+    );
+
+    this.terrainNoisemap.register(this.terrainTilemapManager);
 
     this.cameras.main.setBounds(
       0,
@@ -106,6 +89,8 @@ export class TerrainGenerationScene extends Phaser.Scene {
 
     this.cameras.main.scrollX += move.x * CAM_SPEED * mutiplier;
     this.cameras.main.scrollY += move.y * CAM_SPEED * mutiplier;
+
+    this.cameras.main.setZoom(1.5);
 
     // this.terrainGenerator.onSwitchLayer(this.mapInputController);
     // this.terrainGenerator.onToggleLabel(this.mapInputController);

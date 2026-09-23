@@ -1,13 +1,15 @@
 import { createNoise2D, type NoiseFunction2D } from "simplex-noise";
-import { NOISE_SCALE } from "../../scenes/TerrainGenerationScene";
 import { Noise } from "../entities/Noise";
 import type { TerrainTilemapManager } from "../managers/TerrainTilemapManager";
 
+const NOISE_SCALE: number = 40;
+
+export type Noisemap = Map<string, Noise>;
 export class TerrainNoisemapGenerator {
   private tilemapManager: TerrainTilemapManager;
   private generator: NoiseFunction2D;
 
-  private noises: Map<string, Noise> = new Map();
+  private noises: Noisemap = new Map();
 
   constructor() {
     this.generator = createNoise2D();
