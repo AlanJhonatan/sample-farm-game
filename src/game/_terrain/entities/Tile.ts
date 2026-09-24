@@ -1,11 +1,11 @@
-import type { Tilesets } from "../managers/TerrainTilesetManager";
+import type { TerrainType } from "../manifests/TerrainTreshold";
 
 export interface TileProps {
   key: string;
   variant: string;
   x: number;
   y: number;
-  tilesetName: Tilesets;
+  tilesetName: TerrainType;
 }
 
 export class Tile {
@@ -14,7 +14,7 @@ export class Tile {
   public x: number;
   public y: number;
 
-  private tilesetName: Tilesets;
+  private tilesetName: TerrainType;
 
   constructor(props: TileProps) {
     this.key = props.key;
@@ -28,11 +28,41 @@ export class Tile {
     return this.key;
   }
 
-  getTileset(): Tilesets {
+  getTileset(): TerrainType {
     return this.tilesetName;
   }
 
   getPosition() {
     return { x: this.x, y: this.y };
+  }
+}
+
+export class GrassTile extends Tile {
+  constructor(props: TileProps) {
+    super(props);
+  }
+}
+
+export class TreeTile extends Tile {
+  constructor(props: TileProps) {
+    super(props);
+  }
+}
+
+export class WaterTile extends Tile {
+  constructor(props: TileProps) {
+    super(props);
+  }
+}
+
+export class SandTile extends Tile {
+  constructor(props: TileProps) {
+    super(props);
+  }
+}
+
+export class StoneTile extends Tile {
+  constructor(props: TileProps) {
+    super(props);
   }
 }

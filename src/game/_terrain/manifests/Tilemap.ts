@@ -1,8 +1,8 @@
 const config = {
-  width: 16,
-  height: 16,
-  rows: 50,
-  columns: 50,
+  width: 8,
+  height: 8,
+  rows: 100,
+  columns: 100,
 };
 
 export const TILEMAP = {
