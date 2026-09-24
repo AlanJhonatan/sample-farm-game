@@ -1,5 +1,8 @@
 import * as Phaser from "phaser";
 import { MapInputController } from "../_terrain/controllers/MapInputController";
+import { MouseInputController } from "../_terrain/controllers/MouseInputController";
+import { TileDebugRenderer } from "../_terrain/debug/TileDebugRenderer";
+import { MouseEventEmitter } from "../_terrain/events/MouseInputEvents";
 import { TerrainNoisemapGenerator } from "../_terrain/generators/TerrainNoisemapGenerator";
 import { TerrainTilesetLoader } from "../_terrain/loaders/TerrainTilesetLoader";
 import { TerrainTilemapManager } from "../_terrain/managers/TerrainTilemapManager";
@@ -24,8 +27,14 @@ export class TerrainGenerationScene extends Phaser.Scene {
   private tilesetLoader: TerrainTilesetLoader;
 
   // MANAGERS
-  private tilemapManager: TerrainTilemapManager;
+  private terrainTilemapManager: TerrainTilemapManager;
   private tilesetManager: TerrainTilesetManager;
+
+  // EVENTS
+  private mouseEventEmitter: MouseEventEmitter;
+
+  // DEBUG
+  private tileDebugRenderer: TileDebugRenderer;
 
   constructor() {
     super("TerrainGeneration");
@@ -45,8 +54,12 @@ export class TerrainGenerationScene extends Phaser.Scene {
 
     this.tilesetManager = new TerrainTilesetManager();
 
-    this.tilemapManager.register(this.tilesetManager, this.tilesetLoader);
-    this.terrainNoisemap.register(this.tilemapManager);
+    this.mouseInputController = new MouseInputController({
+      scene: this,
+    });
+
+    this.tileDebugRenderer = new TileDebugRenderer({ scene: this });
+    this.mouseEventEmitter = new MouseEventEmitter();
   }
 
   preload() {
@@ -70,15 +83,25 @@ export class TerrainGenerationScene extends Phaser.Scene {
 
     this.terrainNoisemap.register(this.terrainTilemapManager);
 
-    this.cameras.main.setBounds(
-      0,
-      0,
-      MAP_TILES_SIZE.x * TILE_SIZE,
-      MAP_TILES_SIZE.y * TILE_SIZE,
+    this.tileDebugRenderer.register(
+      this.terrainTilemapManager,
+      this.mouseEventEmitter,
     );
+    this.mouseInputController.register(this.mouseEventEmitter);
+
+    this.inputController.create();
+    this.mapInputController.create();
+    this.terrainTilemapManager.create();
+    this.mouseInputController.create();
+    this.tileDebugRenderer.create();
+
+    const boundX = TILEMAP.config.width * TILEMAP.config.columns;
+    const boundY = TILEMAP.config.height * TILEMAP.config.rows;
+    this.cameras.main.setBounds(0, 0, boundX, boundY);
 
     this.terrainNoisemap.generateNoiseMap();
-    console.log(this.terrainNoisemap.getNoises());
+
+    this.terrainTilemapManager.generateTerrainFromNoise();
   }
 
   update() {
